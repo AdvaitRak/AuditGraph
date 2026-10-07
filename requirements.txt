@@ -1,9 +1,8 @@
 langgraph==1.2.12
 langgraph-checkpoint-postgres
 
-langchain-google-genai      # Gemini
-langchain-groq              # Groq
-langchain-core
+google-genai
+groq
 
 psycopg[binary]
 
