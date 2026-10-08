@@ -26,23 +26,9 @@ def run_churn_analysis(
     repo_path: str,
     max_commits: int = 500,
     min_total_commits: int = 3,
+    limit: int = 10,
 ) -> list[ChurnFinding]:
-    """
-
-    Args:
-        repo_path: path to a local git repository (GitPython walks up to
-                    find the .git dir).
-        max_commits: cap how many commits back we look, for performance.
-        min_total_commits: ignore files with fewer commits than this —
-                    bugfix rate on n=1 is noise, not signal.
-
-    Returns:
-        A list of ChurnFinding, sorted by (bugfix_rate, total_commits)
-        descending.
-
-    Raises:
-        FileNotFoundError if repo_path isn't a git repository.
-    """
+    
     try:
         repo = Repo(repo_path, search_parent_directories=True)
     except (InvalidGitRepositoryError, NoSuchPathError) as e:
@@ -86,7 +72,7 @@ def run_churn_analysis(
     findings.sort(
         key=lambda f: (f.bugfix_rate, f.total_commits), reverse=True
     )
-    return findings
+    return findings[:limit]
 
 
 if __name__ == "__main__":

@@ -22,6 +22,7 @@ class ComplexityFinding(BaseModel):
 def run_complexity_analysis(
     target_path: str,
     min_rank: Rank = "C",
+    limit: int = 10,
 ) -> list[ComplexityFinding]:
     """
     Run radon's cyclomatic complexity analysis on a file or directory.
@@ -85,7 +86,7 @@ def run_complexity_analysis(
             )
 
     findings.sort(key=lambda f: f.complexity_score, reverse=True)
-    return findings
+    return findings[:limit]
 
 
 if __name__ == "__main__":
@@ -95,7 +96,7 @@ if __name__ == "__main__":
     results = run_complexity_analysis(target)
 
     if not results:
-        print(f"No functions at rank C or above found in {target}")
+        print(f"No functions at rank E or above found in {target}")
     else:
         print(f"Found {len(results)} flagged function(s):\n")
         for f in results:
