@@ -15,7 +15,7 @@ from pydantic import BaseModel, Field
 #   E9 = syntax errors and runtime errors
 DEFECT_RULES = "F,B,S,E9"
 
-IGNORED_RULES = "S101"
+IGNORED_RULES = "S101,S108,S602,S603,S607"
 
 RUFF_TIMEOUT_SECONDS = 60
 
@@ -26,6 +26,9 @@ class LintFinding(BaseModel):
     rule: str      
     message: str
 
+def _is_security_rule(rule: str) -> bool:
+    """Bug-family findings (F, B, E9, syntax errors) should outrank security ones."""
+    return rule.startswith("S")
 
 def run_lint_analysis(target_path: str, limit: int = 30) -> list[LintFinding]:
     """
@@ -83,7 +86,9 @@ def run_lint_analysis(target_path: str, limit: int = 30) -> list[LintFinding]:
     ]
 
     counts = Counter(f.file for f in findings)
-    findings.sort(key=lambda f: (-counts[f.file], f.file, f.line_number))
+    findings.sort(
+        key=lambda f: (_is_security_rule(f.rule), -counts[f.file], f.file, f.line_number)
+    )
     return findings[:limit]
 
 

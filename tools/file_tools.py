@@ -37,6 +37,38 @@ def list_files(repo_root: str, directory: str = ".") -> str:
         text += f"\n... {len(entries) - MAX_LIST_ENTRIES} more entries not shown"
     return text
 
+
+def read_file(
+    repo_root: str,
+    path: str,
+    start_line: int = 1,
+    end_line: int | None = None,
+) -> str:
+    """Read a file with line numbers. Long files are returned in pages."""
+    root = Path(repo_root).resolve()
+    target = resolve_in_repo(root, path)
+    if not target.is_file():
+        raise FileNotFoundError(f"file not found: {path}")
+
+    lines = target.read_text(encoding="utf-8", errors="replace").splitlines()
+    total = len(lines)
+
+    start = max(start_line, 1)
+    if start > total:
+        return f"(file has only {total} lines)"
+
+    end = total if end_line is None else min(end_line, total)
+    end = min(end, start + MAX_READ_LINES - 1)
+    if end < start:
+        raise ValueError("end_line must be >= start_line")
+
+    numbered = [f"{i:>4}| {lines[i - 1]}" for i in range(start, end + 1)]
+    text = f"{_rel(root, target)} (lines {start}-{end} of {total})\n" + "\n".join(numbered)
+    if end < total:
+        text += f"\n... file continues; call read_file again with start_line={end + 1}"
+    return text
+
+
 def search_code(
     repo_root: str,
     pattern: str,
@@ -69,5 +101,4 @@ def search_code(
                     if len(results) >= max_results:
                         return "\n".join(results) + f"\n... stopped at {max_results} matches"
 
-    return "\n".join(results) if results else f"no matches for: {pattern}" 
-
+    return "\n".join(results) if results else f"no matches for: {pattern}"
