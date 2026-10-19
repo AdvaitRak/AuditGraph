@@ -10,7 +10,7 @@ fastapi
 uvicorn
     
 radon
-
+ruff
 GitPython
 
 python-dotenv
